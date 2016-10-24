@@ -30,8 +30,18 @@ class StatementPattern {
     match(source) {
         const stack = [];
         const result = [];
-        const ast = acorn.parse(source, this._acornOption); 
-        walk(ast, this._patternHeads, stack, result);
+        if (typeof(source) === 'string') {
+            const ast = acorn.parse(source, this._acornOption);
+            walk(ast, this._patternHeads, stack, result);
+        } else if (Array.isArray(source)) {
+            source.forEach(ast => {
+                walk(ast, this._patternHeads, stack, result);
+            });
+        } else if (source instanceof acorn.Node) {
+            walk(source, this._patternHeads, stack, result);
+        } else {
+            throw new Error("source type should be string or resulting node of patternMatch, but " + typeof(source));
+        }
         return result;
     }
 }
@@ -97,6 +107,9 @@ function walk(node, patterns, stack, result) {
 }
 
 function checkPattern(parent, key, nodes, isSingle, patterns, stack, result) {
+    if (nodes.length === 0) {
+        return;
+    }
     var matchedPattern = patterns[nodes[0].type];
     if (!matchedPattern) {
         if (nodes[0].type === 'VariableDeclarator') {
@@ -132,10 +145,27 @@ function isWildCard(node) {
     return (node.type === 'Identifier' && node.name.startsWith('__') && node.name.endsWith('__'));
 }
 
+function endsWithAnyBody(patternNodes) {
+    var last = patternNodes.slice(-1);
+    if (last.length === 0) {
+        return false;
+    }
+    const ln = last[0];
+    return (ln.type === 'ExpressionStatement' && ln.expression.type === 'Identifier'
+        && ln.expression.name === '__anybody__');
+}
+
+function endsWithExtra(patternNodes) {
+    var last = patternNodes.slice(-1);
+    return (last.length === 1 && last[0].type === 'Identifier' && last[0].name === '__extra__');
+}
+
 function matchNode(node, patternNode) {
     if (isWildCard(patternNode)) {
         switch (patternNode.name) {
             case '__any__':
+                return true;
+            case '__anybody__':
                 return true;
             case '__extra__':
                 return true;
@@ -169,14 +199,21 @@ function matchNode(node, patternNode) {
             const patternArray = patternNode[key];
             var length = array.length;
             if (array.length > patternArray.length) {
-                var last = patternArray.slice(-1);
-                if (last.length === 1 && last[0].type === 'Identifier' && last[0].name === '__extra__') {
+                if (endsWithExtra(patternArray)) {
+                    length = patternArray.length - 1;
+                } else if (endsWithAnyBody(patternArray)) {
                     length = patternArray.length - 1;
                 } else {
                     return false;
                 }
             } else if (array.length < patternArray.length) {
+                if (endsWithExtra(patternArray)) {
+                    length = patternArray.length - 1;
+                } else if (endsWithAnyBody(patternArray)) {
+                    length = patternArray.length - 1;
+                } else {
                     return false;
+                }
             }
             for (var j = 0; j < length; j++) {
                 if (!matchNode(array[j], patternArray[j])) {

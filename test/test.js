@@ -15,7 +15,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var a = 10;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 1);
         assert(result[0].name === 'assign');
@@ -49,7 +49,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var a = __any__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 2);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -67,7 +67,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var a = __number__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 2);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -85,7 +85,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var a = __string__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 1);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -102,7 +102,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var a = __boolean__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 1);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -119,7 +119,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `var __anyname__ = __number__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 2);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -136,7 +136,7 @@ describe('matching with variables', () => {
         const pattern = {
             assign: `__decr__ a = __number__;`
         };
-        
+
         const result = patternMatch(src, pattern);
         assert(result.length === 3);
         assert(result[0].node.type === 'VariableDeclaration');
@@ -157,7 +157,7 @@ describe('matching with Array', () => {
         const src = `
         var array = [1, 2, 3, 4, 5];
         `;
-        
+
         const pattern = {
             array: `[1, 2, 3, 4, 5]`
         };
@@ -166,11 +166,37 @@ describe('matching with Array', () => {
         assert(result.length === 1);
     });
 
-    it('can match with extra values', () => {
+    it('can match with extra value (same length)', () => {
         const src = `
         var array = [1, 2, 3, 4, 5];
         `;
-        
+
+        const pattern = {
+            array: `[1, 2, 3, 4, __extra__]`
+        };
+
+        const result = patternMatch(src, pattern);
+        assert(result.length === 1);
+    });
+
+    it('can match with extra values (src Array is longer)', () => {
+        const src = `
+        var array = [1, 2, 3, 4, 5];
+        `;
+
+        const pattern = {
+            array: `[1, 2, __extra__]`
+        };
+
+        const result = patternMatch(src, pattern);
+        assert(result.length === 1);
+    });
+
+    it('can match with extra values (src Array is shorter)', () => {
+        const src = `
+        var array = [1, 2];
+        `;
+
         const pattern = {
             array: `[1, 2, __extra__]`
         };
@@ -185,7 +211,7 @@ describe('matching with function call', () => {
         const src = `
         const result = func(123, "abc");
         `;
-        
+
         const pattern = {
             call: `const result = func(123, "abc")`
         };
@@ -197,7 +223,7 @@ describe('matching with function call', () => {
         const src = `
         const result = func(123, "abc", true);
         `;
-        
+
         const pattern = {
             call: `const result = func(123, "abc", __extra__)`
         };
@@ -209,12 +235,100 @@ describe('matching with function call', () => {
         const src = `
         const result = func(123, "abc", true, false, null);
         `;
-        
+
         const pattern = {
             call: `const result = func(123, "abc", __extra__)`
         };
         const result = patternMatch(src, pattern);
         assert(result.length === 1);
+    });
+});
+
+describe('matching with body', () => {
+    it('can match single body and __anybody__', () => {
+        const src = `
+        function a() {
+            console.log("inside a");
+        }
+
+        function b() {
+            console.log("inside b");
+        }
+        `;
+
+        const pattern = {
+            func: `function __anyname__() { __anybody__; }`
+        };
+        const result = patternMatch(src, pattern);
+        assert(result.length === 2);
+    });
+
+    it('can match empty body and __anybody__', () => {
+        const src = `
+        function a() {
+        }
+
+        function b() {
+        }
+        `;
+
+        const pattern = {
+            func: `function __anyname__() { __anybody__; }`
+        };
+        const result = patternMatch(src, pattern);
+        assert(result.length === 2);
+    });
+
+    it('can match multiline bodies and __anybody__', () => {
+        const src = `
+        function a() {
+            console.log("inside a");
+            console.log("inside a");
+        }
+
+        function b() {
+            console.log("inside b");
+            console.log("inside b");
+        }
+        `;
+
+        const pattern = {
+            func: `function __anyname__() { __anybody__; }`
+        };
+        const result = patternMatch(src, pattern);
+        assert(result.length === 2);
+    });
+});
+
+describe('nested search', () => {
+    it('can search resulting node again', () => {
+        const src = `
+        (function b() {
+            function a() {
+                const i18n = require('i18n4v');
+
+                console.log(i18n('translation'));
+            }
+        })();
+        console.log(i18n('dummy1'));
+        console.log(i18n('dummy2'));
+        `
+        const pattern1 = {
+            i18n: `__decr__ __anyname__ = require('i18n4v');`
+        };
+        const result1 = patternMatch(src, pattern1);
+
+        assert(result1.length === 1);
+        assert(result1[0].stack.length === 6);
+
+        // console.log(JSON.stringify(result1[0].node, null, 4));
+        const varName = result1[0].node.declarations[0].id.name;
+        const pattern2 = {
+            usei18n: varName + '(__string__)'
+        }
+        // search from function body block that defines i18n variable
+        const result2 = patternMatch(result1[0].stack.slice(-1), pattern2);
+        assert(result2.length === 1);
     });
 });
 
@@ -229,7 +343,7 @@ describe('StatementPattern class', () => {
         const pattern = new StatementPattern({
             assign: `var a = 10;`
         });
-        
+
         const result = pattern.match(src);
         assert(result.length === 1);
         assert(result[0].name === 'assign');
