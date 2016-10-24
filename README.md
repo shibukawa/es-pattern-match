@@ -84,10 +84,11 @@ const result = patternMatch(`
     (function () {
         console.log("hello world");
     })();`, {
-    'immediate-function: `(function () {
+    "immediate-function": `(function () {
         __anybody__;
     })`
 });
+```
 
 ### __anyname__
 
@@ -147,7 +148,7 @@ $ npm install es-pattern-match
 
 ## Licence
 
-(MIT)[https://shibu.mit-license.org/]
+[MIT](https://shibu.mit-license.org/)
 
 ## Author
 
