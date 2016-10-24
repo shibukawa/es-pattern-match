@@ -1,0 +1,33 @@
+{
+  "name": "es-pattern-match",
+  "version": "0.5.0",
+  "description": "ECMAScript AST pattern match library that finds code fragments inside source code.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require intelli-espower-loader",
+    "posttest": "eslint index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/shibukawa/es-pattern-match "
+  },
+  "keywords": [
+    "AST",
+    "acorn",
+    "pattern",
+    "match",
+    "regular",
+    "expression"
+  ],
+  "author": "Yoshiki Shibukawa",
+  "license": "MIT",
+  "dependencies": {
+    "acorn": "^4.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^3.8.1",
+    "intelli-espower-loader": "^1.0.1",
+    "mocha": "^3.1.2",
+    "power-assert": "^1.4.1"
+  }
+}
