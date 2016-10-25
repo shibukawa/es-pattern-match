@@ -351,7 +351,32 @@ describe('nested search', () => {
         const result1 = patternMatch(src, pattern1);
 
         assert(result1.length === 1);
-        assert(result1[0].stack.length === 6);
+        assert(result1[0].stack.length === 7);
+
+        // console.log(JSON.stringify(result1[0].node, null, 4));
+        const varName = result1[0].node.declarations[0].id.name;
+        const pattern2 = {
+            usei18n: varName + '(__string__)'
+        }
+        // search from function body block that defines i18n variable
+        const result2 = patternMatch(result1[0].stack.slice(-1), pattern2);
+        assert(result2.length === 1);
+    });
+
+    it('can search resulting node again in flat structure', () => {
+        const src = `
+        'use strict';
+        const i18n = require('i18n4v');
+
+        console.log(i18n('translation'));
+        `
+        const pattern1 = {
+            i18n: `__decr__ __anyname__ = require('i18n4v');`
+        };
+        const result1 = patternMatch(src, pattern1);
+
+        assert(result1.length === 1);
+        assert(result1[0].stack.length === 1);
 
         // console.log(JSON.stringify(result1[0].node, null, 4));
         const varName = result1[0].node.declarations[0].id.name;

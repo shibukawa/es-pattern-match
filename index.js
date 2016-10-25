@@ -150,7 +150,7 @@ function checkPattern(parent, key, nodes, isSingle, patterns, stack, result) {
                     } else {
                         copiedStack.push({node: parent, key: key, index: offset});
                     }
-                    result.push({name: pattern.name, stack: stack, node: nodes[offset]});
+                    result.push({name: pattern.name, stack: copiedStack, node: nodes[offset]});
                 }
             });
         });

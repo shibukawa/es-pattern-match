@@ -1,6 +1,6 @@
 {
   "name": "es-pattern-match",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "ECMAScript AST pattern match library that finds code fragments inside source code.",
   "main": "index.js",
   "scripts": {
