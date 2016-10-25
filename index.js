@@ -46,6 +46,7 @@ class StatementPattern {
     }
 }
 
+
 function preprocessPatternAST(source, acornOption) {
     let position = 0;
     const convertedCode = [];
@@ -66,6 +67,7 @@ function preprocessPatternAST(source, acornOption) {
     walkPattern(body, decrPositions);
     return body;
 }
+
 
 function walkPattern(node, decrPositions) {
     if (node.type === 'VariableDeclaration' && decrPositions.indexOf(node.start) !== -1) {
@@ -106,44 +108,56 @@ function walk(node, patterns, stack, result) {
     });
 }
 
+const extraPatterns = {
+    VariableDeclarator: ['AssignmentExpression'],
+    ObjectExpression: ['Identifier'],
+    ArrayExpression: ['Identifier'],
+    Literal: ['Identifier']
+};
+
 function checkPattern(parent, key, nodes, isSingle, patterns, stack, result) {
     if (nodes.length === 0) {
         return;
     }
-    var matchedPattern = patterns[nodes[0].type];
-    if (!matchedPattern) {
-        if (nodes[0].type === 'VariableDeclarator') {
-            matchedPattern = patterns.AssignmentExpression;
-        }
+    const type = nodes[0].type;
+    const matchedPatterns = [patterns[type]];
+    if (extraPatterns[type]) {
+        extraPatterns[type].forEach(extraType => {
+            matchedPatterns.push(patterns[extraType]);
+        });
+    }
+    matchedPatterns.forEach(matchedPattern => {
         if (!matchedPattern) {
             return;
-        } 
-    }
-    matchedPattern.forEach(pattern => {
-        for (var offset = 0; offset < (nodes.length - pattern.ast.length + 1); offset++) {
-            var match = true;
-            for (var i = 0; i < pattern.ast.length; i++) {
-                if (!matchNode(nodes[offset+i], pattern.ast[i])) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                const copiedStack = stack.slice(0);
-                if (isSingle) {
-                    copiedStack.push({node: parent, key: key});
-                } else {
-                    copiedStack.push({node: parent, key: key, index: offset});
-                }
-                result.push({name: pattern.name, stack: stack, node: nodes[offset]});
-            }
         }
+        matchedPattern.forEach(pattern => {
+            for (var offset = 0; offset < (nodes.length - pattern.ast.length + 1); offset++) {
+                var match = true;
+                for (var i = 0; i < pattern.ast.length; i++) {
+                    if (!matchNode(nodes[offset+i], pattern.ast[i])) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    const copiedStack = stack.slice(0);
+                    if (isSingle) {
+                        copiedStack.push({node: parent, key: key});
+                    } else {
+                        copiedStack.push({node: parent, key: key, index: offset});
+                    }
+                    result.push({name: pattern.name, stack: stack, node: nodes[offset]});
+                }
+            }
+        });
     });
 }
+
 
 function isWildCard(node) {
     return (node.type === 'Identifier' && node.name.startsWith('__') && node.name.endsWith('__'));
 }
+
 
 function endsWithAnyBody(patternNodes) {
     var last = patternNodes.slice(-1);
@@ -177,6 +191,10 @@ function matchNode(node, patternNode) {
                 return (node.type === 'Literal' && typeof(node.value) === 'string');
             case '__boolean__':
                 return (node.type === 'Literal' && typeof(node.value) === 'boolean');
+            case '__object__':
+                return node.type === 'ObjectExpression';
+            case '__array__':
+                return node.type === 'ArrayExpression';
         }
     }
     if (node.type !== patternNode.type) {

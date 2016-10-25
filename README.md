@@ -49,13 +49,13 @@ Analyze patterns' AST and cache.
 
 Analyze src AST and find matched part in src with patterns.
 
-### patternMatch(src : string|acorn.Node|acorn.Node[], patterns : Map.<string, string>, acornOption : Object) : {name: string, node: acorn.Node, stack: acorn.Node[]}[]
+### function patternMatch(src : string|acorn.Node|acorn.Node[], patterns : Map.<string, string>, acornOption : Object) : {name: string, node: acorn.Node, stack: acorn.Node[]}[]
 
 It is a shortcut function to call StatementPattern#match.
 
 ## Wildcard Reference
 
-### __decr__
+### ``__decr__``
 
 It matches with ``var``, ``const``, ``let``.
 
@@ -65,17 +65,17 @@ const result = patternMatch(`const v = 'string'`, {
 });
 ```
 
-### __any__
+### ``__any__``
 
 It matches with any node.
 
 ```js
-const result = patternMatch(`const v = 'string'`, {
-    'string-variable-declearation': `__decr__ v = __string__`
+const result = patternMatch(`const v = ['array', {object: "also matched"}]`, {
+    'variable-declearation': `__decr__ v = __any__`
 });
 ```
 
-### __anybody__
+### ``__anybody__``
 
 It matches with expressions in function body.
 
@@ -90,7 +90,7 @@ const result = patternMatch(`
 });
 ```
 
-### __anyname__
+### ``__anyname__``
 
 It matches with any identifier.
 
@@ -100,15 +100,15 @@ const result = patternMatch(`const v = 'string'`, {
 });
 ```
 
-### __number__
+### ``__number__``
 
 ```js
 const result = patternMatch(`var v = 12345`, {
-    'string-variable-declearation': `var v = __number__`
+    'number-variable-declearation': `var v = __number__`
 });
 ```
 
-### __string__
+### ``__string__``
 
 ```js
 const result = patternMatch(`let v = 'string'`, {
@@ -116,17 +116,37 @@ const result = patternMatch(`let v = 'string'`, {
 });
 ```
 
-### __boolean__
+### ``__boolean__``
 
 It matches with true/false
 
 ```js
 const result = patternMatch(`const v = true`, {
-    'string-variable-declearation': `const v = __boolean__`
+    'boolean-variable-declearation': `const v = __boolean__`
 });
 ```
 
-### __extra__
+### ``__array__``
+
+It matches with any arrays
+
+```js
+const result = patternMatch(`const v = ['array', 'is', 'matched', 'with', '__array__']`, {
+    'array-variable-declearation': `const v = __array__`
+});
+```
+
+### ``__object__``
+
+It matches with object expression
+
+```js
+const result = patternMatch(`const v = {'object': 'expression'}`, {
+    'object-variable-declearation': `const v = __object__`
+});
+```
+
+### ``__extra__``
 
 It matches with extra function arguments or extra elements of Array
 

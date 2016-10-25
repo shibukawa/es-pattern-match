@@ -298,6 +298,34 @@ describe('matching with body', () => {
         const result = patternMatch(src, pattern);
         assert(result.length === 2);
     });
+
+    it('can match with object and __array__', () => {
+        const src = `
+        var a = [
+            {name: 'shibukawa', age: 35}
+        ];
+        `;
+
+        const pattern = {
+            obj: '__array__'
+        };
+        const result = patternMatch(src, pattern);
+        assert(result.length === 1);
+    });
+
+    it('can match with object and __object__', () => {
+        const src = `
+        var a = [
+            {name: 'shibukawa', age: 35}
+        ];
+        `;
+
+        const pattern = {
+            obj: '__object__'
+        };
+        const result = patternMatch(src, pattern);
+        assert(result.length === 1);
+    });
 });
 
 describe('nested search', () => {
