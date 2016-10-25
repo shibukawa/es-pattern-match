@@ -242,7 +242,7 @@ function matchNode(node, patternNode) {
                     return false;
                 }
             }
-        } else if (value.type) {
+        } else if (value instanceof acorn.Node) {
             if (!matchNode(value, patternNode[key])) {
                 return false;
             }
