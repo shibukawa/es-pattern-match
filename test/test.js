@@ -331,8 +331,12 @@ describe('matching with body', () => {
 describe('nested search', () => {
     it('can search resulting node again', () => {
         const src = `
+        function i18n() {
+            console.log("dummy");
+        };
         (function b() {
             function a() {
+                'use strict';
                 const i18n = require('i18n4v');
 
                 console.log(i18n('translation'));

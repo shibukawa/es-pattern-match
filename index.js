@@ -119,19 +119,23 @@ function checkPattern(parent, key, nodes, isSingle, patterns, stack, result) {
     if (nodes.length === 0) {
         return;
     }
-    const type = nodes[0].type;
-    const matchedPatterns = [patterns[type]];
-    if (extraPatterns[type]) {
-        extraPatterns[type].forEach(extraType => {
-            matchedPatterns.push(patterns[extraType]);
-        });
-    }
-    matchedPatterns.forEach(matchedPattern => {
-        if (!matchedPattern) {
-            return;
+    for (var offset = 0; offset < nodes.length; offset++) {
+        var remainNodeCount = (nodes.length - offset);
+        const type = nodes[offset].type;
+        const matchedPatterns = [patterns[type]];
+        if (extraPatterns[type]) {
+            extraPatterns[type].forEach(extraType => {
+                matchedPatterns.push(patterns[extraType]);
+            });
         }
-        matchedPattern.forEach(pattern => {
-            for (var offset = 0; offset < (nodes.length - pattern.ast.length + 1); offset++) {
+        matchedPatterns.forEach(matchedPattern => {
+            if (!matchedPattern) {
+                return;
+            }
+            matchedPattern.forEach(pattern => {
+                if (pattern.ast.length > remainNodeCount) {
+                    return;
+                }
                 var match = true;
                 for (var i = 0; i < pattern.ast.length; i++) {
                     if (!matchNode(nodes[offset+i], pattern.ast[i])) {
@@ -148,9 +152,9 @@ function checkPattern(parent, key, nodes, isSingle, patterns, stack, result) {
                     }
                     result.push({name: pattern.name, stack: stack, node: nodes[offset]});
                 }
-            }
+            });
         });
-    });
+    }
 }
 
 
