@@ -55,13 +55,13 @@ It is a shortcut function to call StatementPattern#match.
 
 ## Wildcard Reference
 
-### ``__decr__``
+### ``__decl__``
 
 It matches with ``var``, ``const``, ``let``.
 
 ```js
 const result = patternMatch(`const v = 'string'`, {
-    'string-variable-declearation': `__decr__ v = __string__`
+    'string-variable-declearation': `__decl__ v = __string__`
 });
 ```
 
@@ -71,7 +71,7 @@ It matches with any node.
 
 ```js
 const result = patternMatch(`const v = ['array', {object: "also matched"}]`, {
-    'variable-declearation': `__decr__ v = __any__`
+    'variable-declearation': `__decl__ v = __any__`
 });
 ```
 

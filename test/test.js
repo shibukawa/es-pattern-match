@@ -126,7 +126,7 @@ describe('matching with variables', () => {
         assert(result[1].node.type === 'VariableDeclaration');
     });
 
-    it('can match any kind of assignment by using __decr__', () => {
+    it('can match any kind of assignment by using __decl__', () => {
         const src = `
         var a = 10;
         const a = 15;
@@ -134,7 +134,7 @@ describe('matching with variables', () => {
         `;
 
         const pattern = {
-            assign: `__decr__ a = __number__;`
+            assign: `__decl__ a = __number__;`
         };
 
         const result = patternMatch(src, pattern);
@@ -346,7 +346,7 @@ describe('nested search', () => {
         console.log(i18n('dummy2'));
         `
         const pattern1 = {
-            i18n: `__decr__ __anyname__ = require('i18n4v');`
+            i18n: `__decl__ __anyname__ = require('i18n4v');`
         };
         const result1 = patternMatch(src, pattern1);
 
@@ -371,7 +371,7 @@ describe('nested search', () => {
         console.log(i18n('translation'));
         `
         const pattern1 = {
-            i18n: `__decr__ __anyname__ = require('i18n4v');`
+            i18n: `__decl__ __anyname__ = require('i18n4v');`
         };
         const result1 = patternMatch(src, pattern1);
 

@@ -50,10 +50,10 @@ class StatementPattern {
 function preprocessPatternAST(source, acornOption) {
     let position = 0;
     const convertedCode = [];
-    const decrPositions = [];
-    source.split(/(__decr__)/).forEach(fragment => {
-        if (fragment === '__decr__') {
-            decrPositions.push(position);
+    const declPositions = [];
+    source.split(/(__decl__)/).forEach(fragment => {
+        if (fragment === '__decl__') {
+            declPositions.push(position);
             fragment = 'const';
         }
         position += fragment.length;
@@ -64,23 +64,23 @@ function preprocessPatternAST(source, acornOption) {
     if (body.length === 1 && body[0].type === 'ExpressionStatement') {
         body = [body[0].expression];
     }
-    walkPattern(body, decrPositions);
+    walkPattern(body, declPositions);
     return body;
 }
 
 
-function walkPattern(node, decrPositions) {
-    if (node.type === 'VariableDeclaration' && decrPositions.indexOf(node.start) !== -1) {
+function walkPattern(node, declPositions) {
+    if (node.type === 'VariableDeclaration' && declPositions.indexOf(node.start) !== -1) {
         delete node.kind;
     }
     Object.keys(node).forEach(key => {
         const value = node[key];
         if (Array.isArray(value)) {
             value.forEach(elem => {
-                walkPattern(elem, decrPositions);
+                walkPattern(elem, declPositions);
             });
         } else if (value.type) {
-            walkPattern(value, decrPositions);
+            walkPattern(value, declPositions);
         }
     });
 }
